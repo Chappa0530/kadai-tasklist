@@ -16,17 +16,23 @@ class TasksController extends Controller
      */
     public function index()
     {
+        $data = [];
         if (\Auth::check()) { 
-            // メッセージ一覧を取得
-            $tasks = Task::all();
-    
+            // 認証済みユーザを取得
+            $user = \Auth::user();
+            $tasks = $user->tasks()->paginate(20);
+
             // メッセージ一覧ビューでそれを表示
             return view('tasks.index', [
                 'tasks' => $tasks,
             ]);
         }
-            return redirect('/login');
+    
+            return view('welcome');
     }
+
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -74,10 +80,15 @@ class TasksController extends Controller
     public function show($id)
     {
         $task = Task::findOrFail($id);
-
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.show', [
+                'task' => $task,
+            ]);
+        }
+        else{
+            return redirect('/');
+        }
     }
 
     /**
